@@ -5,7 +5,6 @@
     <string name="s_example">Sobral</string>
     <string name="gps_warning">Localização está desativada!</string>
 
-    <string name="admob_app_id">ca-app-pub-5584100480564844~9670749618</string>
     <string name="admob_banner_id">ca-app-pub-5584100480564844/5656973676</string>
     <string name="admob_banner_test">ca-app-pub-3940256099942544/6300978111</string>
 </resources>
