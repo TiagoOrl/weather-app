@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">WeatherGetter</string>
-    <string name="today">today</string>
-    <string name="admob_banner_id">ca-app-pub-5584100480564844/5656973676</string>
-    <string name="admob_banner_test">ca-app-pub-3940256099942544/6300978111</string>
-
-    <string name="gps_warning">GPS Is Disabled!</string>
     <string name="s_getCity">Get City</string>
     <string name="s_example">tokyo</string>
+    <string name="s_today">hoje</string>
+
+    <string name="gps_warning">GPS Is Disabled!</string>
+    <string name="return_warning">Could not get the weather!</string>
+    <string name="request_warning">GPS permission is needed</string>
+
+    <string name="admob_banner_id">ca-app-pub-5584100480564844/5656973676</string>
+    <string name="admob_banner_test">ca-app-pub-3940256099942544/6300978111</string>
 </resources>

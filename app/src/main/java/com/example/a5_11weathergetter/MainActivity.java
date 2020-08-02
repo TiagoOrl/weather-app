@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onProviderDisabled(String provider) {
-            Toast.makeText(MainActivity.this, "Localização desativada!", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, R.string.gps_warning, Toast.LENGTH_LONG).show();
         }
     };
 
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Toast.makeText(MainActivity.this, "Permissão para usar localização é necessário",
+                Toast.makeText(MainActivity.this, R.string.request_warning,
                     Toast.LENGTH_SHORT).show();
             }
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_CODE);
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         try {
 
             if (json_object == null){
-                Toast.makeText(MainActivity.this, "Não foi possível obter os dados", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.return_warning, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Toast.makeText(MainActivity.this,"Não foi possível obter a previsão", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this,R.string.return_warning, Toast.LENGTH_SHORT).show();
         }
     }
 
