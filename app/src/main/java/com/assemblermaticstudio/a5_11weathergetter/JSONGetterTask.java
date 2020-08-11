@@ -1,4 +1,4 @@
-package com.example.a5_11weathergetter;
+package com.assemblermaticstudio.a5_11weathergetter;
 
 import org.json.JSONException;
 import org.json.JSONObject;

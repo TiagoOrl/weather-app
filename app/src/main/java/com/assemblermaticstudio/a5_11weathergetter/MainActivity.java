@@ -1,4 +1,4 @@
-package com.example.a5_11weathergetter;
+package com.assemblermaticstudio.a5_11weathergetter;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
