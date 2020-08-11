@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Toast.makeText(MainActivity.this, R.string.request_warning,
+                Toast.makeText(MainActivity.this, R.string.gps_request_warning,
                     Toast.LENGTH_SHORT).show();
             }
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_CODE);
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Toast.makeText(MainActivity.this,R.string.return_warning, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this,R.string.json_exception, Toast.LENGTH_SHORT).show();
         }
     }
 

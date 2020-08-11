@@ -5,8 +5,9 @@
     <string name="s_example">Sobral</string>
 
     <string name="gps_warning">Localização está desativada!</string>
-    <string name="return_warning">Não foi possivel obter os dados!</string>
-    <string name="request_warning">Permissão para usar o GPS é necessário</string>
+    <string name="return_warning">Não foi possível obter os dados!</string>
+    <string name="gps_request_warning">Permissão para usar o GPS é necessário</string>
+    <string name="json_exception">Exceção ao obter os dados</string>
 
 
     <string name="admob_banner_id">ca-app-pub-5584100480564844/5656973676</string>
