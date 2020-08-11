@@ -1,4 +1,4 @@
-package com.example.a5_11weathergetter;
+package com.assemblermaticstudio.a5_11weathergetter;
 
 public class ForecastDayItem {
     public String s_hour0, s_hour1, s_hour2, s_hour3, s_hour4, s_hour5, s_hour6, s_hour7, s_day;

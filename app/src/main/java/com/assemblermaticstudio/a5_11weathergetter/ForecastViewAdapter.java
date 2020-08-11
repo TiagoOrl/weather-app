@@ -1,4 +1,4 @@
-package com.example.a5_11weathergetter;
+package com.assemblermaticstudio.a5_11weathergetter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +7,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.assemblermaticstudio.a5_11weathergetter.R;
 
 import java.util.ArrayList;
 
