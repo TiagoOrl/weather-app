@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
 
         AdRequest adRequest = new AdRequest.Builder().build();
-
         ad_main.loadAd(adRequest);
 
 
