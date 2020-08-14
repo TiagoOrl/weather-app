@@ -73,25 +73,7 @@ public class MainActivity extends AppCompatActivity {
     static final int FINE_LOCATION_CODE = 1;
     double d_latitude, d_longitude;
 
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            d_longitude = location.getLongitude();
-            d_latitude = location.getLatitude();
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            Toast.makeText(MainActivity.this, R.string.gps_warning, Toast.LENGTH_LONG).show();
-        }
-    };
+    private LocationListener locationListener;
 
 
     @Override
@@ -130,11 +112,33 @@ public class MainActivity extends AppCompatActivity {
         cl_data.animate().translationX(F_ANIM_POSX).alpha(0.0f).setDuration(0);
         rv_forecastDisplay.animate().alpha(0.0f).setDuration(0);
 
+        locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                d_longitude = location.getLongitude();
+                d_latitude = location.getLatitude();
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                Toast.makeText(MainActivity.this, R.string.gps_warning, Toast.LENGTH_SHORT).show();
+            }
+        };
+
 
         if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+
             locationManager = (LocationManager)MainActivity.this.getSystemService(LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, 10, locationListener);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 100, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 800, 100, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 100, locationListener);
 
 
         } else {
@@ -184,12 +188,30 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     public void onGetThroughGPS(View v){
 
+        Location loc_network = null;
+        Location loc_gps = null;
+
+        if (locationManager != null) {
+            loc_network  = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            loc_gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+
+        if (loc_network != null) {
+            d_latitude = loc_network.getLatitude();
+            d_longitude = loc_network.getLongitude();
+        }
+
+        if (loc_gps != null){
+            d_latitude = loc_gps.getLatitude();
+            d_longitude = loc_gps.getLongitude();
+        }
 
         // esconder teclado chamado por editText
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
         jsonGetter = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude + "&units=metric&appid=" + API_KEY);
         final Future<JSONObject> future = executorService.submit(jsonGetter);
         final Handler handler = new Handler();
+
 
         new Thread(new Runnable() {
             @Override
