@@ -10,9 +10,6 @@
     <string name="json_exception">Exceção ao obter os dados</string>
 
 
-    <string name="admob_banner_release">ca-app-pub-5584100480564844/5656973676</string>
-    <string name="admob_banner_test">ca-app-pub-3940256099942544/6300978111</string>
-
     <string name="s_PERMISSION_title">Permissão necessária</string>
     <string name="s_PERMISSION_msg">Permissão de acesso ao GPS é preciso para obter as previsões</string>
     <string name="s_PERMISSION_ok">Aceitar</string>

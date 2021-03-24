@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     // arrays and consts
     ArrayList<ForecastDayItem> mForecastDayItemList;
-    static final String API_KEY = "375d0d17583d557e8c95485fc73b0e94";
+    static final String API_KEY = "your key here";
     static final float F_ANIM_POSX = 1200f;
 
     double d_latitude, d_longitude;
@@ -102,11 +102,6 @@ public class MainActivity extends AppCompatActivity {
 
         inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
-
-
-        ad_main = findViewById(R.id.ad_main);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        ad_main.loadAd(adRequest);
 
 
         cl_mainForecast.animate().translationX(F_ANIM_POSX).alpha(0.0f).setDuration(0);
@@ -164,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?q="+ s_city +"&units=metric&appid=" +
-                API_KEY + "&lang=" + Locale.getDefault().getLanguage());
+                API_KEY);
 
         future = executorService.submit(jsonGetterTask);
 

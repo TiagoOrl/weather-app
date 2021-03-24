@@ -9,8 +9,6 @@
     <string name="gps_request_warning">GPS permission is needed</string>
     <string name="json_exception">Exception at getting the weather</string>
 
-    <string name="admob_banner_release">ca-app-pub-5584100480564844/5656973676</string>
-    <string name="admob_banner_test">ca-app-pub-3940256099942544/630097811</string>
 
     <string name="s_PERMISSION_title">Permission needed</string>
     <string name="s_PERMISSION_msg">A permission to access GPS data is needed to get the forecast</string>
