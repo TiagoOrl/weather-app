@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,10 +23,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.assemblermaticstudio.a5_11weathergetter.R;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,28 +46,29 @@ public class MainActivity extends AppCompatActivity {
 
 
     // threads and getter objects
+    Future<JSONObject> future;
     ExecutorService executorService = Executors.newFixedThreadPool(10);
-    JSONGetterTask jsonGetter;
+    JSONGetterTask jsonGetterTask;
     LocationManager locationManager;
     InputMethodManager inputMethodManager;
+    Handler handler;
 
     // Views
     TextView tv_latitude, tv_longitude, tv_city, tv_weather, tv_temperature;
     EditText et_cityInput;
     Button btn_cityInput;
-    FloatingActionButton fab_getThroughLocation;
-    ConstraintLayout cl_data;
-    RecyclerView rv_forecastDisplay;
+    ConstraintLayout cl_mainForecast;
+    RecyclerView rv_forecast;
     RecyclerView.Adapter mForecastAdapter;
     RecyclerView.LayoutManager mForecastLayoutManager;
     ImageView iv_weatherIcon;
     AdView ad_main;
 
     // arrays and consts
-    ArrayList<ForecastDayItem> mForecastDayList;
+    ArrayList<ForecastDayItem> mForecastDayItemList;
     static final String API_KEY = "375d0d17583d557e8c95485fc73b0e94";
     static final float F_ANIM_POSX = 1200f;
-    static final int FINE_LOCATION_CODE = 1;
+
     double d_latitude, d_longitude;
 
     private LocationListener locationListener;
@@ -95,22 +93,24 @@ public class MainActivity extends AppCompatActivity {
         tv_temperature = findViewById(R.id.tv_temperature);
         et_cityInput = findViewById(R.id.et_cityInput);
         btn_cityInput = findViewById(R.id.btn_cityInput);
-        cl_data = findViewById(R.id.cl_data);
-        rv_forecastDisplay = findViewById(R.id.rv_forecast);
+        rv_forecast = findViewById(R.id.rv_forecast);
         mForecastLayoutManager = new LinearLayoutManager(this);
         iv_weatherIcon = findViewById(R.id.iv_weatherIcon);
-        fab_getThroughLocation = findViewById(R.id.fab_location);
-        ad_main = findViewById(R.id.ad_main);
+        cl_mainForecast = findViewById(R.id.cl_data);
+
+        handler = new Handler();
 
         inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
 
+
+        ad_main = findViewById(R.id.ad_main);
         AdRequest adRequest = new AdRequest.Builder().build();
         ad_main.loadAd(adRequest);
 
 
-        cl_data.animate().translationX(F_ANIM_POSX).alpha(0.0f).setDuration(0);
-        rv_forecastDisplay.animate().alpha(0.0f).setDuration(0);
+        cl_mainForecast.animate().translationX(F_ANIM_POSX).alpha(0.0f).setDuration(0);
+        rv_forecast.animate().alpha(0.0f).setDuration(0);
 
         locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
@@ -133,44 +133,49 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager = (LocationManager)MainActivity.this.getSystemService(LOCATION_SERVICE);
+
+
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 100, locationListener);
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 800, 100, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 100, locationListener);
 
 
+
         } else {
-            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Toast.makeText(MainActivity.this, R.string.gps_request_warning,
-                    Toast.LENGTH_SHORT).show();
-            }
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_CODE);
+            PermissionsManager.requestPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         }
+
+
+
+
+
     }
 
     public void onGetThroughTextInput(View v){
 
         String s_city = et_cityInput.getText().toString();
-        final Handler handler = new Handler();
 
         // esconder teclado chamado por editText
         InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
 
 
-        jsonGetter = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?q="+ s_city +"&units=metric&appid=" + API_KEY);
-        final Future<JSONObject> future = executorService.submit(jsonGetter);
+        jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?q="+ s_city +"&units=metric&appid=" + API_KEY);
+        future = executorService.submit(jsonGetterTask);
 
-        new Thread(new Runnable() {
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+                while (!future.isDone()){
+                }
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            getAndDisplayData(future.get());
+                            processAndDisplay(future.get()); // future.get() waits until the thread has returned: blocking op
                         } catch (ExecutionException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {
@@ -179,60 +184,88 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-        }).start();
+        });
 
-
+        t.start();
     }
 
 
-    @SuppressLint("MissingPermission")
-    public void onGetThroughGPS(View v){
+    public void onGetThroughGPS(View v) {
 
         Location loc_network = null;
         Location loc_gps = null;
 
-        if (locationManager != null) {
-            loc_network  = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            loc_gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-        if (loc_network != null) {
-            d_latitude = loc_network.getLatitude();
-            d_longitude = loc_network.getLongitude();
-        }
+            locationManager = (LocationManager)MainActivity.this.getSystemService(LOCATION_SERVICE);
 
-        if (loc_gps != null){
-            d_latitude = loc_gps.getLatitude();
-            d_longitude = loc_gps.getLongitude();
-        }
-
-        // esconder teclado chamado por editText
-        inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
-        jsonGetter = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude + "&units=metric&appid=" + API_KEY);
-        final Future<JSONObject> future = executorService.submit(jsonGetter);
-        final Handler handler = new Handler();
-
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            getAndDisplayData(future.get());
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+            if (locationListener == null) {
+                Toast.makeText(this, getString(R.string.gps_warning), Toast.LENGTH_SHORT).show();
             }
-        }).start();
+            else {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 100, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 800, 100, locationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 100, locationListener);
+            }
+
+
+            if (locationManager != null) {
+                loc_network  = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                loc_gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            }
+
+            if (loc_network != null) {
+                d_latitude = loc_network.getLatitude();
+                d_longitude = loc_network.getLongitude();
+            }
+
+            if (loc_gps != null){
+                d_latitude = loc_gps.getLatitude();
+                d_longitude = loc_gps.getLongitude();
+            }
+
+            // esconder teclado chamado por editText
+            inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
+            jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude + "&units=metric&appid=" + API_KEY);
+
+            future = executorService.submit(jsonGetterTask); // submit() starts a new thread: non blocking op
+
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (!future.isDone()){
+
+                    }
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                processAndDisplay(future.get()); // future.get() waits until the thread has returned: blocking op
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            t.start();
+
+        }
+
+        else {
+            PermissionsManager.requestPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+
     }
 
-    void getAndDisplayData(JSONObject json_object){
+
+
+    void processAndDisplay(JSONObject json_object) {
         try {
 
             if (json_object == null){
@@ -243,8 +276,32 @@ public class MainActivity extends AppCompatActivity {
             JSONObject json_todayData = json_object.getJSONArray("list").getJSONObject(0);
             JSONObject json_cityData = json_object.getJSONObject("city");
             JSONArray json_forecastArray = json_object.getJSONArray("list");
-            mForecastDayList = new ArrayList<>();
-            String[] h = new String[9];
+            mForecastDayItemList = new ArrayList<>();
+            String[] h_list = new String[9];
+
+            for(int i = 0;i < json_forecastArray.length(); i++){
+                JSONObject jsonObjIndex = json_forecastArray.getJSONObject(i);
+
+                if (i == 0){
+                    h_list[0] = convertToDDMMFormat(jsonObjIndex.getString("dt_txt").split(" ")[0].split("^\\d+-")[1]) + "\n";
+                    i++;
+                }
+
+
+                if (i % 8 == 0){
+                    mForecastDayItemList.add( new ForecastDayItem(h_list[0], h_list[1], h_list[2], h_list[3], h_list[4], h_list[5], h_list[6], h_list[7], h_list[8] ));
+                    h_list = new String[9];
+                    h_list[0] = convertToDDMMFormat(jsonObjIndex.getString("dt_txt").split(" ")[0].split("^\\d+-")[1]) + "\n";
+                }
+
+                else {
+                    h_list[i % 8] = jsonObjIndex.getJSONObject("main").getString("temp").split("\\.")[0] + " ºC - "
+                            + translator(jsonObjIndex.getJSONArray("weather").getJSONObject(0).getString("main")) + " "
+                            +  jsonObjIndex.getString("dt_txt").split(" ")[1].split(":")[0] + "h" + "\n";
+                }
+            }
+
+
 
             tv_city.setText(MessageFormat.format("{0}, {1}",json_cityData.getString("name"), json_cityData.getString("country") ));
             tv_temperature.setText(MessageFormat.format("{0} ºC",json_todayData.getJSONObject("main").getString("temp") ));
@@ -252,43 +309,25 @@ public class MainActivity extends AppCompatActivity {
             tv_latitude.setText(MessageFormat.format("Lat: {0}", json_cityData.getJSONObject("coord").getString("lat") ));
             tv_longitude.setText(MessageFormat.format("Lon: {0}", json_cityData.getJSONObject("coord").getString("lon") ));
 
-            iv_weatherIcon.setImageBitmap(setWeatherIcon(json_todayData.getJSONArray("weather").getJSONObject(0).getString("description")));
+            iv_weatherIcon.setImageBitmap(getWeatherIcon(json_todayData.getJSONArray("weather").getJSONObject(0).getString("description")));
 
 
-            for(int i = 0;i < json_forecastArray.length(); i++){
-                JSONObject jsonObjIndex = json_forecastArray.getJSONObject(i);
+            cl_mainForecast.animate().translationX(0.0f).alpha(1.0f).setDuration(250);
+            rv_forecast.animate().alpha(1.0f).setDuration(300);
 
-                if (i == 0){
-                    h[0] = convertToDDMMFormat(jsonObjIndex.getString("dt_txt").split(" ")[0].split("^\\d+-")[1]) + "\n";
-                    i++;
-                }
-
-
-                if (i % 8 == 0){
-                    mForecastDayList.add( new ForecastDayItem(h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], h[8] ));
-                    h = new String[9];
-                    h[0] = convertToDDMMFormat(jsonObjIndex.getString("dt_txt").split(" ")[0].split("^\\d+-")[1]) + "\n";
-                }
-
-                else {
-                    h[i % 8] = jsonObjIndex.getJSONObject("main").getString("temp").split("\\.")[0] + " ºC - "
-                            + translator(jsonObjIndex.getJSONArray("weather").getJSONObject(0).getString("main")) + " "
-                            +  jsonObjIndex.getString("dt_txt").split(" ")[1].split(":")[0] + "h" + "\n";
-                }
-            }
-
-            mForecastAdapter = new ForecastViewAdapter(mForecastDayList);
-            rv_forecastDisplay.setLayoutManager(mForecastLayoutManager);
-            rv_forecastDisplay.setAdapter(mForecastAdapter);
-
-            cl_data.animate().translationX(0.0f).alpha(1.0f).setDuration(250);
-            rv_forecastDisplay.animate().alpha(1.0f).setDuration(300);
+            initReciclerView(mForecastDayItemList);
 
 
         } catch (JSONException e) {
             e.printStackTrace();
             Toast.makeText(MainActivity.this,R.string.json_exception, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void initReciclerView(ArrayList<ForecastDayItem> mForecastDayItemList) {
+        mForecastAdapter = new ForecastViewAdapter(mForecastDayItemList);
+        rv_forecast.setLayoutManager(mForecastLayoutManager);
+        rv_forecast.setAdapter(mForecastAdapter);
     }
 
     private String translator(String weather){
@@ -309,12 +348,12 @@ public class MainActivity extends AppCompatActivity {
             case "overcast clouds": translated = "Nuvens Carregadas"; break;
             case "broken clouds": translated = "Nuvens Quebradas"; break;
 
-            default: translated = "null";
+            default: translated = weather;
         }
         return translated;
     }
 
-    private Bitmap setWeatherIcon(String weather){
+    private Bitmap getWeatherIcon(String weather){
         Bitmap bitmap = null;
 
         switch(weather.toLowerCase()){
