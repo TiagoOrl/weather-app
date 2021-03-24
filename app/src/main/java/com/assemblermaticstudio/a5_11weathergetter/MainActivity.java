@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
             // esconder teclado chamado por editText
             inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
             jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude +
-                    "&units=metric&appid=" + API_KEY + "&lang=" + Locale.getDefault().getLanguage());
+                    "&units=metric&appid=" + API_KEY);
 
 
 
