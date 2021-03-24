@@ -163,7 +163,9 @@ public class MainActivity extends AppCompatActivity {
         inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
 
 
-        jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?q="+ s_city +"&units=metric&appid=" + API_KEY);
+        jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?q="+ s_city +"&units=metric&appid=" +
+                API_KEY + "&lang=" + Locale.getDefault().getLanguage());
+
         future = executorService.submit(jsonGetterTask);
 
         Thread t = new Thread(new Runnable() {
@@ -226,7 +228,10 @@ public class MainActivity extends AppCompatActivity {
 
             // esconder teclado chamado por editText
             inputMethodManager.hideSoftInputFromWindow(et_cityInput.getWindowToken(), 0);
-            jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude + "&units=metric&appid=" + API_KEY);
+            jsonGetterTask = new JSONGetterTask("https://api.openweathermap.org/data/2.5/forecast?lat=" + d_latitude + "&lon=" + d_longitude +
+                    "&units=metric&appid=" + API_KEY + "&lang=" + Locale.getDefault().getLanguage());
+
+
 
             future = executorService.submit(jsonGetterTask); // submit() starts a new thread: non blocking op
 
@@ -356,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap getWeatherIcon(String weather){
         Bitmap bitmap = null;
 
-        switch(weather.toLowerCase()){
+        switch(weather.toLowerCase()) {
             case "clouds": bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cloudy); break;
             case "clear": bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.clear_sky); break;
             case "clear sky": bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.clear_sky); break;
