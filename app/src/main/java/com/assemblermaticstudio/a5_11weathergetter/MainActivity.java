@@ -23,9 +23,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,9 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView.Adapter mForecastAdapter;
     RecyclerView.LayoutManager mForecastLayoutManager;
     ImageView iv_weatherIcon;
-    AdView ad_main;
 
     // arrays and consts
     ArrayList<ForecastDayItem> mForecastDayItemList;
